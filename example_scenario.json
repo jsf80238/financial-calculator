@@ -1,0 +1,22 @@
+{
+  "initial_allocations": {
+    "sp500": 750000,
+    "3month": 250000
+  },
+  "income_flows": [
+    {
+      "start_month": 0,
+      "end_month": 360,
+      "amount": 2000,
+      "annual_inflation_factor": 0.025
+    }
+  ],
+  "expense_flows": [
+    {
+      "start_month": 0,
+      "end_month": 360,
+      "amount": 8000,
+      "annual_inflation_factor": 0.03
+    }
+  ]
+}
