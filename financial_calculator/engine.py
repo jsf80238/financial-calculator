@@ -58,16 +58,16 @@ def simulate_path(
 
     indices = tuple(sorted(scenario.initial_allocations.keys()))
     returns_data.require_indices(set(indices))
-    prior = (
-        dict(scenario.mean_shrinkage_prior)
-        if scenario.mean_shrinkage_prior is not None
-        else None
-    )
+    # prior = (
+    #     dict(scenario.mean_shrinkage_prior)
+    #     if scenario.mean_shrinkage_prior is not None
+    #     else None
+    # )
     lam = shrinkage_lambda_for_market_assumption(market_assumption)
     model = returns_data.parametric_model(
         indices,
         shrinkage_lambda=lam,
-        shrinkage_prior=prior,
+        shrinkage_prior=None,
     )
 
     total_init = sum(scenario.initial_allocations.values())

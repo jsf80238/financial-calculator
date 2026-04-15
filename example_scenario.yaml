@@ -1,0 +1,41 @@
+initial_allocations:
+  3month: 850000
+  bond: 200000
+  ftse: 200000
+  ishares: 400000
+  russell: 200000
+  sp400: 200000
+  sp500: 1800000
+#
+#mean_shrinkage_prior:
+#  sp500: 0.000
+#  3month: 0.000
+
+income_flows:
+  salary:
+    start_month: 0
+    end_month: 24
+    amount: 2400
+    annual_inflation_factor: 0.025
+  jason_social_security:
+    start_month: 144
+    end_month: 99999
+    amount: 4713
+    annual_inflation_factor: 0.025
+  julia_social_security:
+    start_month: 108
+    end_month: 99999
+    amount: 1621
+    annual_inflation_factor: 0.025
+
+expense_flows:
+  health_insurance:
+    start_month: 24
+    end_month: 360
+    amount: 2500
+    annual_inflation_factor: 0.05
+  living:
+    start_month: 0
+    end_month: 99999
+    amount: 12750
+    annual_inflation_factor: 0.03
