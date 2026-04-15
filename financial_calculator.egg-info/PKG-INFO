@@ -5,6 +5,7 @@ Summary: Local Monte Carlo retirement / runway calculator
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: numpy>=1.24
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Dynamic: license-file

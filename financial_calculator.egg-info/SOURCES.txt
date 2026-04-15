@@ -15,4 +15,6 @@ financial_calculator.egg-info/dependency_links.txt
 financial_calculator.egg-info/requires.txt
 financial_calculator.egg-info/top_level.txt
 tests/test_engine.py
+tests/test_monte_carlo.py
 tests/test_returns_data.py
+tests/test_scenario_json.py

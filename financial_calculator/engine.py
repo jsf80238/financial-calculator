@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 
-from financial_calculator.models import CashFlow, ReturnMethod, Scenario
+from numpy.random import Generator
+
+from financial_calculator.models import CashFlow, MarketAssumption, Scenario, shrinkage_lambda_for_market_assumption
 from financial_calculator.returns_data import ReturnsData
 
 
@@ -39,44 +40,49 @@ def _sum_expense(scenario: Scenario, month_index: int) -> float:
     return sum(_flow_nominal_for_month(f, month_index) for f in scenario.expense_flows)
 
 
-def _draw_return(
-    rng: random.Random,
-    returns_data: ReturnsData,
-    method: ReturnMethod,
-    index_name: str,
-) -> float:
-    pool = returns_data.by_name[index_name].pool(method)
-    return rng.choice(pool)
-
-
 def simulate_path(
     scenario: Scenario,
     returns_data: ReturnsData,
     horizon_months: int,
-    method: ReturnMethod,
-    rng: random.Random,
+    market_assumption: MarketAssumption,
+    rng: Generator,
 ) -> PathResult:
     """
     One Monte Carlo path. Monthly order: returns → income (split) → expense (split).
 
-    Raises ValueError if portfolio total is zero when income or expense needs splitting.
+    Investment returns are multivariate Normal with mean from **shrinkage**
+    (``--market-assumption`` sets λ toward ``mean_shrinkage_prior``); covariance from history.
     """
     if horizon_months < 1:
         raise ValueError("horizon_months must be at least 1")
 
-    indices = list(scenario.initial_allocations.keys())
+    indices = tuple(sorted(scenario.initial_allocations.keys()))
     returns_data.require_indices(set(indices))
+    prior = (
+        dict(scenario.mean_shrinkage_prior)
+        if scenario.mean_shrinkage_prior is not None
+        else None
+    )
+    lam = shrinkage_lambda_for_market_assumption(market_assumption)
+    model = returns_data.parametric_model(
+        indices,
+        shrinkage_lambda=lam,
+        shrinkage_prior=prior,
+    )
 
     total_init = sum(scenario.initial_allocations.values())
     if total_init <= 0:
         raise ValueError("initial allocations must sum to a positive total")
 
-    balances: dict[str, float] = {k: float(v) for k, v in scenario.initial_allocations.items()}
+    balances: dict[str, float] = {
+        k: float(v) for k, v in scenario.initial_allocations.items()
+    }
 
     for month_index in range(horizon_months):
-        # 1) Investment returns (independent draw per index)
+        month_returns = model.sample_month_returns(rng)
+
         for name in indices:
-            r = _draw_return(rng, returns_data, method, name)
+            r = month_returns[name]
             balances[name] *= 1.0 + r
 
         total_after_returns = sum(balances.values())
@@ -90,7 +96,6 @@ def simulate_path(
         income = _sum_income(scenario, month_index)
         expense = _sum_expense(scenario, month_index)
 
-        # 2) Income proportional to balances after returns
         if income != 0.0:
             for name in indices:
                 balances[name] += income * balances[name] / total_after_returns
@@ -103,7 +108,6 @@ def simulate_path(
                 final_total_balance=0.0,
             )
 
-        # 3) Expense proportional to balances after income
         if expense >= total_after_income:
             return PathResult(
                 depleted=True,

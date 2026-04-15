@@ -36,10 +36,18 @@ def scenario_from_json_dict(data: dict[str, Any]) -> Scenario:
     income_flows = [_flow_from_dict(x) for x in income_raw]
     expense_flows = [_flow_from_dict(x) for x in expense_raw]
 
+    prior_raw = data.get("mean_shrinkage_prior")
+    shrink_prior: dict[str, float] | None = None
+    if prior_raw is not None:
+        if not isinstance(prior_raw, dict):
+            raise TypeError("mean_shrinkage_prior must be an object")
+        shrink_prior = {str(k): float(v) for k, v in prior_raw.items()}
+
     return Scenario(
         initial_allocations=initial,
         income_flows=income_flows,
         expense_flows=expense_flows,
+        mean_shrinkage_prior=shrink_prior,
     )
 
 

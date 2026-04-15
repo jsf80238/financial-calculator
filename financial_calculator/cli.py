@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from financial_calculator.models import ReturnMethod
+from financial_calculator.models import MarketAssumption
 from financial_calculator.monte_carlo import run_monte_carlo
 from financial_calculator.returns_data import load_returns_csv
 from financial_calculator.scenario_json import load_scenario_json
@@ -39,10 +39,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of Monte Carlo paths",
     )
     p.add_argument(
-        "--method",
-        choices=[m.value for m in ReturnMethod],
-        default=ReturnMethod.normal.value,
-        help="Return sampling method",
+        "--market-assumption",
+        choices=[m.value for m in MarketAssumption],
+        default=MarketAssumption.normal.value,
+        help=(
+            "Blend fitted means with mean_shrinkage_prior: "
+            "normal=100%% sample; below_average=85%%/15%%; "
+            "significantly_below_average=70%%/30%%"
+        ),
     )
     p.add_argument(
         "--seed",
@@ -67,14 +71,14 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     returns_data = load_returns_csv(returns_path)
-    method = ReturnMethod(args.method)
+    market_assumption = MarketAssumption(args.market_assumption)
 
     summary = run_monte_carlo(
         scenario,
         returns_data,
         horizon_months=args.horizon_months,
         num_paths=args.paths,
-        method=method,
+        market_assumption=market_assumption,
         seed=args.seed,
     )
 

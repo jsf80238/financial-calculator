@@ -1,6 +1,6 @@
 import pytest
 
-from financial_calculator.models import ReturnMethod, Scenario
+from financial_calculator.models import MarketAssumption, Scenario
 from financial_calculator.monte_carlo import run_monte_carlo
 from financial_calculator.returns_data import load_returns_csv
 
@@ -13,13 +13,13 @@ def test_run_monte_carlo_zero_returns(zero_returns_path):
         data,
         horizon_months=5,
         num_paths=10,
-        method=ReturnMethod.normal,
+        market_assumption=MarketAssumption.normal,
         seed=0,
     )
     assert summary.num_paths == 10
     assert summary.num_depleted == 0
     assert len(summary.final_balances_survivors) == 10
-    assert all(b == 200.0 for b in summary.final_balances_survivors)
+    assert all(abs(b - 200.0) < 1e-4 for b in summary.final_balances_survivors)
 
 
 def test_num_paths_validation(zero_returns_path):
@@ -31,6 +31,6 @@ def test_num_paths_validation(zero_returns_path):
             data,
             horizon_months=1,
             num_paths=0,
-            method=ReturnMethod.normal,
+            market_assumption=MarketAssumption.normal,
             seed=0,
         )

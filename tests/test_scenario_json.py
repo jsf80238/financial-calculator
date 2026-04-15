@@ -22,6 +22,16 @@ def test_scenario_from_json_dict():
     assert s.income_flows[0].end_month == 5
 
 
+def test_mean_shrinkage_prior_from_json():
+    data = {
+        "initial_allocations": {"x": 10.0},
+        "mean_shrinkage_prior": {"x": 0.001},
+    }
+    s = scenario_from_json_dict(data)
+    assert s.mean_shrinkage_prior is not None
+    assert s.mean_shrinkage_prior["x"] == 0.001
+
+
 def test_round_trip_json(tmp_path):
     p = tmp_path / "s.json"
     obj = {

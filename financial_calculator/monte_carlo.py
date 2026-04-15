@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass, field
 
+import numpy as np
+
 from financial_calculator.engine import PathResult, simulate_path
-from financial_calculator.models import ReturnMethod, Scenario
+from financial_calculator.models import MarketAssumption, Scenario
 from financial_calculator.returns_data import ReturnsData
 
 
@@ -58,13 +59,13 @@ def run_monte_carlo(
     returns_data: ReturnsData,
     horizon_months: int,
     num_paths: int,
-    method: ReturnMethod,
+    market_assumption: MarketAssumption,
     seed: int | None = None,
 ) -> MonteCarloSummary:
     if num_paths < 1:
         raise ValueError("num_paths must be at least 1")
 
-    rng = random.Random(seed)
+    rng = np.random.default_rng(seed)
     depleted = 0
     survived = 0
     depletion_months: list[int] = []
@@ -73,7 +74,7 @@ def run_monte_carlo(
 
     for _ in range(num_paths):
         result: PathResult = simulate_path(
-            scenario, returns_data, horizon_months, method, rng
+            scenario, returns_data, horizon_months, market_assumption, rng
         )
         if result.depleted:
             depleted += 1

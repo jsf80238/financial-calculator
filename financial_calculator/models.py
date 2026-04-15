@@ -5,10 +5,31 @@ from enum import Enum
 from typing import Mapping
 
 
-class ReturnMethod(str, Enum):
+class MarketAssumption(str, Enum):
+    """
+    How much to blend fitted sample means with ``mean_shrinkage_prior``:
+
+    ``μ = λ μ̂ + (1−λ) μ_prior`` per index (covariance still from history).
+    """
+
     normal = "normal"
+    """λ = 1 — use sample means only; prior is ignored."""
+
     below_average = "below_average"
+    """λ = 0.85 — 15% weight on prior, 85% on sample mean."""
+
     significantly_below_average = "significantly_below_average"
+    """λ = 0.70 — 30% weight on prior, 70% on sample mean."""
+
+
+def shrinkage_lambda_for_market_assumption(assumption: MarketAssumption) -> float:
+    if assumption is MarketAssumption.normal:
+        return 1.0
+    if assumption is MarketAssumption.below_average:
+        return 0.85
+    if assumption is MarketAssumption.significantly_below_average:
+        return 0.70
+    raise NotImplementedError(assumption)
 
 
 @dataclass(frozen=True)
@@ -32,6 +53,9 @@ class Scenario:
     initial_allocations: Mapping[str, float]
     income_flows: list[CashFlow] = field(default_factory=list)
     expense_flows: list[CashFlow] = field(default_factory=list)
+    #: Monthly return anchor per index (decimal) when ``--market-assumption`` is
+    #: ``below_average`` or ``significantly_below_average``. Omitted indices default to ``0``.
+    mean_shrinkage_prior: Mapping[str, float] | None = None
 
     def __post_init__(self) -> None:
         if not self.initial_allocations:
