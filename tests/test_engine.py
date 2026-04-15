@@ -24,12 +24,12 @@ def test_one_month_ledger_zero_returns(zero_returns_path):
     data = load_returns_csv(zero_returns_path)
     scenario = Scenario(
         initial_allocations={"a": 600.0, "b": 400.0},
-        income_flows=[
-            CashFlow(0, 0, 100.0, 0.0),
-        ],
-        expense_flows=[
-            CashFlow(0, 0, 100.0, 0.0),
-        ],
+        income_flows={
+            "i": CashFlow(0, 0, 100.0, 0.0),
+        },
+        expense_flows={
+            "e": CashFlow(0, 0, 100.0, 0.0),
+        },
     )
     rng = np.random.default_rng(42)
     result = simulate_path(
@@ -44,9 +44,7 @@ def test_depletion_high_expense(zero_returns_path):
     data = load_returns_csv(zero_returns_path)
     scenario = Scenario(
         initial_allocations={"a": 100.0, "b": 100.0},
-        expense_flows=[
-            CashFlow(0, 0, 500.0, 0.0),
-        ],
+        expense_flows={"big": CashFlow(0, 0, 500.0, 0.0)},
     )
     rng = np.random.default_rng(0)
     result = simulate_path(

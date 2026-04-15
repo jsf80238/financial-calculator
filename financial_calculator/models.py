@@ -9,7 +9,7 @@ class MarketAssumption(str, Enum):
     """
     How much to blend fitted sample means with ``mean_shrinkage_prior``:
 
-    ``μ = λ μ̂ + (1−λ) μ_prior`` per index (covariance still from history).
+    Per index: ``μ = λ × fitted_mean + (1−λ) × prior`` (covariance from history).
     """
 
     normal = "normal"
@@ -51,8 +51,8 @@ class Scenario:
     """User scenario: initial allocations and optional cash flows."""
 
     initial_allocations: Mapping[str, float]
-    income_flows: list[CashFlow] = field(default_factory=list)
-    expense_flows: list[CashFlow] = field(default_factory=list)
+    income_flows: Mapping[str, CashFlow] = field(default_factory=dict)
+    expense_flows: Mapping[str, CashFlow] = field(default_factory=dict)
     #: Monthly return anchor per index (decimal) when ``--market-assumption`` is
     #: ``below_average`` or ``significantly_below_average``. Omitted indices default to ``0``.
     mean_shrinkage_prior: Mapping[str, float] | None = None

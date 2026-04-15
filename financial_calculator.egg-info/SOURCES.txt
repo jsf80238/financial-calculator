@@ -8,7 +8,7 @@ financial_calculator/engine.py
 financial_calculator/models.py
 financial_calculator/monte_carlo.py
 financial_calculator/returns_data.py
-financial_calculator/scenario_json.py
+financial_calculator/scenario_io.py
 financial_calculator.egg-info/PKG-INFO
 financial_calculator.egg-info/SOURCES.txt
 financial_calculator.egg-info/dependency_links.txt
@@ -17,4 +17,4 @@ financial_calculator.egg-info/top_level.txt
 tests/test_engine.py
 tests/test_monte_carlo.py
 tests/test_returns_data.py
-tests/test_scenario_json.py
+tests/test_scenario_io.py

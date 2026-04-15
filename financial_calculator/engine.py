@@ -33,11 +33,11 @@ def _flow_nominal_for_month(flow: CashFlow, month_index: int) -> float:
 
 
 def _sum_income(scenario: Scenario, month_index: int) -> float:
-    return sum(_flow_nominal_for_month(f, month_index) for f in scenario.income_flows)
+    return sum(_flow_nominal_for_month(f, month_index) for f in scenario.income_flows.values())
 
 
 def _sum_expense(scenario: Scenario, month_index: int) -> float:
-    return sum(_flow_nominal_for_month(f, month_index) for f in scenario.expense_flows)
+    return sum(_flow_nominal_for_month(f, month_index) for f in scenario.expense_flows.values())
 
 
 def simulate_path(

@@ -9,7 +9,7 @@ from financial_calculator.models import (
 )
 from financial_calculator.monte_carlo import MonteCarloSummary, run_monte_carlo
 from financial_calculator.returns_data import ParametricReturnModel, ReturnsData, load_returns_csv
-from financial_calculator.scenario_json import load_scenario_json, scenario_from_json_dict
+from financial_calculator.scenario_io import load_scenario, scenario_from_dict
 
 __all__ = [
     "CashFlow",
@@ -20,9 +20,9 @@ __all__ = [
     "Scenario",
     "MonteCarloSummary",
     "load_returns_csv",
-    "load_scenario_json",
+    "load_scenario",
     "run_monte_carlo",
-    "scenario_from_json_dict",
+    "scenario_from_dict",
     "shrinkage_lambda_for_market_assumption",
     "simulate_path",
 ]

@@ -8,7 +8,7 @@ from pathlib import Path
 from financial_calculator.models import MarketAssumption
 from financial_calculator.monte_carlo import run_monte_carlo
 from financial_calculator.returns_data import load_returns_csv
-from financial_calculator.scenario_json import load_scenario_json
+from financial_calculator.scenario_io import load_scenario
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -18,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "scenario",
         type=Path,
-        help="Path to scenario JSON file",
+        help="Path to scenario file (.yaml / .yml / .json)",
     )
     p.add_argument(
         "--returns",
@@ -64,7 +64,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    scenario = load_scenario_json(args.scenario)
+    scenario = load_scenario(args.scenario)
     returns_path = args.returns
     if not returns_path.is_file():
         print(f"Returns file not found: {returns_path}", file=sys.stderr)
