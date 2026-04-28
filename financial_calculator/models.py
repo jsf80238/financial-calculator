@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Mapping
 
@@ -56,6 +57,7 @@ class Scenario:
     #: Monthly return anchor per index (decimal) when ``--market-assumption`` is
     #: ``below_average`` or ``significantly_below_average``. Omitted indices default to ``0``.
     mean_shrinkage_prior: Mapping[str, float] | None = None
+    birthdates: dict = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not self.initial_allocations:

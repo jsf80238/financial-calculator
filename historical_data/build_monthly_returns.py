@@ -8,14 +8,15 @@ month M and end_date is the last calendar day of month M+1. Both dates must
 exist exactly in the input (no nearest-trading-day fallback).
 """
 
-from __future__ import annotations
-
 import argparse
 import calendar
 import csv
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
+# Imports above are standard Python
+# Imports below are 3rd-party
+from dateutil import relativedelta
 
 
 def parse_date(s: str) -> date:
@@ -127,16 +128,35 @@ def main() -> int:
         for path in csv_paths:
             index_name = path.stem
             series = load_series(path)
-            for start_date, end_date, change in month_period_returns(series):
-                w.writerow(
-                    [
-                        index_name,
-                        start_date.isoformat(),
-                        end_date.isoformat(),
-                        "month",
-                        f"{change:.4f}",
-                    ]
-                )
+            # Data for T-bills/interest bearing is in a straight yearly percentage
+            # They will be named something like "3month" or "7day"
+            if index_name[0].isdigit():
+                for row in load_series(path):
+                    start_date = row[0]
+                    if start_date.day != 1:
+                        continue
+                    end_date = start_date + relativedelta.relativedelta(months=+1)
+                    change = row[1] / 12  # Original is a yearly rate
+                    w.writerow(
+                        [
+                            index_name,
+                            start_date.isoformat(),  # start_date
+                            end_date.isoformat(),
+                            "month",
+                            f"{change:.4f}",
+                        ]
+                    )
+            else:  # Other data is prices, so need to calculate the monthly difference
+                for start_date, end_date, change in month_period_returns(series):
+                    w.writerow(
+                        [
+                            index_name,
+                            start_date.isoformat(),
+                            end_date.isoformat(),
+                            "month",
+                            f"{change:.4f}",
+                        ]
+                    )
 
     print(f"Wrote {out_path}")
     return 0

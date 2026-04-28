@@ -1,3 +1,7 @@
+birthdates:
+  julia: 1964-01-01
+  jason: 1967-09-01
+
 initial_allocations:
   3month: 850000
   bond: 200000

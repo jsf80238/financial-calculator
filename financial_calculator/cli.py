@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+from datetime import datetime
 import json
 import statistics
 import sys
@@ -18,9 +19,10 @@ def build_parser() -> argparse.ArgumentParser:
         description="Monte Carlo financial calculator (local)",
     )
     p.add_argument(
-        "scenario",
+        "--scenario",
         type=Path,
         help="Path to scenario file (.yaml / .yml / .json)",
+        default=Path.cwd().parent / "example_scenario.yaml",
     )
     p.add_argument(
         "--returns",
@@ -31,14 +33,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--horizon-months",
         type=int,
-        required=True,
+        # required=True,
         help="Simulation length in months (>= 1)",
+        default=420,
     )
     p.add_argument(
         "--paths",
         type=int,
-        required=True,
+        # required=True,
         help="Number of Monte Carlo paths",
+        default=200,
     )
     p.add_argument(
         "--market-assumption",
@@ -89,18 +93,20 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"Paths: {summary.num_paths}, horizon: {summary.horizon_months} months")
         print(f"Depleted: {summary.num_depleted} ({summary.fraction_depleted:.2%})")
-        print(f"Survived: {summary.num_survived}")
-        if summary.depletion_month_counts:
-            print("Depletion month (histogram):", summary.depletion_month_counts)
-        if summary.num_survived > 0:
-            print("Final balance (survivors):")
-            print(f"  mean:   {summary.final_balance_mean:,.2f}")
-            print(f"  median: {summary.final_balance_median:,.2f}")
-            print(f"  p10:    {summary.final_balance_p10:,.2f}")
-            print(f"  p90:    {summary.final_balance_p90:,.2f}")
+        print(f"Survived: {summary.num_survived} ({1-summary.fraction_depleted:.2%})")
         depletion_month_counter = collections.Counter(summary.depletion_month_counts)
-        depletion_month_counter[summary.horizon_months] += summary.num_survived
-        print("Median depletion month:", statistics.median(depletion_month_counter.elements()))
+        if summary.depletion_month_counts:
+            depletion_month_counter[summary.horizon_months] += summary.num_survived
+            print("Depletion month (histogram):", summary.depletion_month_counts)
+        # if summary.num_survived > 0:
+        #     print("Final balance (survivors):")
+        #     print(f"  mean:   {summary.final_balance_mean:,.2f}")
+        #     print(f"  median: {summary.final_balance_median:,.2f}")
+        #     print(f"  p10:    {summary.final_balance_p10:,.2f}")
+        #     print(f"  p90:    {summary.final_balance_p90:,.2f}")
+        median_depletion_month = statistics.median(depletion_month_counter.elements())
+        median_depletion_as_year_month = datetime.today()
+        print("Median depletion month:", )
 
     return 0
 

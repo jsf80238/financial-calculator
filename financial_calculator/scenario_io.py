@@ -35,6 +35,7 @@ def scenario_from_dict(data: dict[str, Any]) -> Scenario:
     if not isinstance(alloc, dict):
         raise TypeError("initial_allocations must be a mapping")
     initial = {str(k): float(v) for k, v in alloc.items()}
+    birthdates = data.get("birthdates")
 
     income_flows = _flows_from_mapping(data.get("income_flows"), "income_flows")
     expense_flows = _flows_from_mapping(data.get("expense_flows"), "expense_flows")
@@ -51,6 +52,7 @@ def scenario_from_dict(data: dict[str, Any]) -> Scenario:
         income_flows=income_flows,
         expense_flows=expense_flows,
         mean_shrinkage_prior=shrink_prior,
+        birthdates=birthdates,
     )
 
 
