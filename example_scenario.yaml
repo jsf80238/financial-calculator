@@ -12,10 +12,25 @@ initial_allocations:
 #  3month: 0.000
 
 income_flows:
-  salary:
+  salary_jason_full_time:
     start_month: 0
     end_month: 24
-    amount: 2400
+    amount: 8000
+    annual_inflation_factor: 0.025
+  salary_julia_full_time:
+    start_month: 0
+    end_month: 24
+    amount: 2700
+    annual_inflation_factor: 0.025
+  salary_jason_part_time:
+    start_month: 24
+    end_month: 84
+    amount: 3000
+    annual_inflation_factor: 0.025
+  salary_julia_part_time:
+    start_month: 0
+    end_month: 24
+    amount: 2000
     annual_inflation_factor: 0.025
   jason_social_security:
     start_month: 144
@@ -29,13 +44,18 @@ income_flows:
     annual_inflation_factor: 0.025
 
 expense_flows:
-  health_insurance:
+  health_insurance_jason:
     start_month: 24
-    end_month: 360
-    amount: 2500
+    end_month: 108
+    amount: 1250
+    annual_inflation_factor: 0.05
+  health_insurance_julia:
+    start_month: 24
+    end_month: 72
+    amount: 1250
     annual_inflation_factor: 0.05
   living:
     start_month: 0
     end_month: 99999
     amount: 12750
-    annual_inflation_factor: 0.03
+    annual_inflation_factor: 0.04

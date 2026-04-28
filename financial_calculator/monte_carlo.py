@@ -8,6 +8,9 @@ from financial_calculator.engine import PathResult, simulate_path
 from financial_calculator.models import MarketAssumption, Scenario
 from financial_calculator.returns_data import ReturnsData
 
+from base import Logger
+logger = Logger().get_logger()
+
 
 def _percentile_nearest(sorted_vals: list[float], p: float) -> float:
     """p in [0, 100]."""
@@ -72,7 +75,11 @@ def run_monte_carlo(
     final_survivors: list[float] = []
     counts: dict[int, int] = {}
 
-    for _ in range(num_paths):
+    path_num = 1
+    for _ in enumerate(range(num_paths), 1):
+        if path_num % 10 == 0:
+            logger.info(f"Monte Carlo path {path_num}/{num_paths}")
+        path_num += 1
         result: PathResult = simulate_path(
             scenario, returns_data, horizon_months, market_assumption, rng
         )

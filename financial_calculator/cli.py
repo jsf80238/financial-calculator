@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import json
+import statistics
 import sys
 from pathlib import Path
 
@@ -96,6 +98,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  median: {summary.final_balance_median:,.2f}")
             print(f"  p10:    {summary.final_balance_p10:,.2f}")
             print(f"  p90:    {summary.final_balance_p90:,.2f}")
+        depletion_month_counter = collections.Counter(summary.depletion_month_counts)
+        depletion_month_counter[summary.horizon_months] += summary.num_survived
+        print("Median depletion month:", statistics.median(depletion_month_counter.elements()))
 
     return 0
 
