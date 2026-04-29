@@ -1,13 +1,9 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-
+# Imports above are standard Python
+# Imports below are 3rd-party
 import numpy as np
-
 from financial_calculator.engine import PathResult, simulate_path
 from financial_calculator.models import MarketAssumption, Scenario
-from financial_calculator.returns_data import ReturnsData
-
 from base import Logger
 logger = Logger().get_logger()
 

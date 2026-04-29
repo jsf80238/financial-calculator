@@ -1,13 +1,37 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-
-from numpy.random import Generator
-
+# Imports above are standard Python
+# Imports below are 3rd-party
 from financial_calculator.models import CashFlow, MarketAssumption, Scenario
-from financial_calculator.returns_data import ReturnsData
+from base import Logger, RETURNS_PATH
 
-from base import Logger
+
+logger = Logger().get_logger()
+
+
+def get_random_path(index_name: str):
+    # 1. Open the Parquet file (metadata only)
+    filepath = RETURNS_PATH / f"{index_name}.parquet"
+    pfile = pq.ParquetFile(filepath)
+
+    # 2. Pick a random row group
+    # Since we saved in chunks of 100k, there are 10 groups in 1M sims
+    num_groups = pfile.num_row_groups
+    random_group_idx = np.random.randint(0, num_groups)
+
+    logger.debug(f"Reading from row group {random_group_idx} of {num_groups}...")
+
+    # 3. Load only that specific row group into a DataFrame
+    table = pfile.read_row_group(random_group_idx)
+    df_chunk = table.to_pandas()
+
+    # 4. Pick one random row (simulation) from this chunk
+    random_sim = df_chunk.sample(n=1)
+
+    # Convert to a Series for easier plotting (transpose so index is Month)
+    path_series = random_sim.iloc[0]
+    path_series.index = [int(m[1:]) for m in path_series.index]  # Convert 'M001' to 1
+
+    return path_series
 
 
 @dataclass(frozen=True)
@@ -47,25 +71,12 @@ def simulate_path(
     returns_data: ReturnsData,
     horizon_months: int,
     market_assumption: MarketAssumption,
-    rng: Generator,
 ) -> PathResult:
     """
     One Monte Carlo path. Monthly order: returns → income (split) → expense (split).
-
-    Investment returns are multivariate Normal with mean from **shrinkage**
-    (``--market-assumption`` sets λ toward ``mean_shrinkage_prior``); covariance from history.
     """
-    if horizon_months < 1:
-        raise ValueError("horizon_months must be at least 1")
-
     indices = tuple(sorted(scenario.initial_allocations.keys()))
     returns_data.require_indices(set(indices))
-    # prior = (
-    #     dict(scenario.mean_shrinkage_prior)
-    #     if scenario.mean_shrinkage_prior is not None
-    #     else None
-    # )
-    lam = shrinkage_lambda_for_market_assumption(market_assumption)
     model = returns_data.parametric_model(
         indices,
         shrinkage_lambda=lam,

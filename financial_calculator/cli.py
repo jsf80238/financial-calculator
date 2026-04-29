@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import argparse
 import collections
 from datetime import datetime
@@ -13,7 +11,7 @@ from base import Logger, RETURNS_PATH
 from financial_calculator.models import MarketAssumption
 from financial_calculator.monte_carlo import run_monte_carlo
 from financial_calculator.returns_data import load_returns_csv
-from financial_calculator.scenario_io import load_scenario
+from financial_calculator.scenario import load_scenario
 
 logger = Logger().get_logger()
 
@@ -71,7 +69,6 @@ summary = run_monte_carlo(
     horizon_months=args.horizon_months,
     num_paths=args.iterations,
     market_assumption=market_assumption,
-    seed=args.seed,
 )
 
 if args.json_out:

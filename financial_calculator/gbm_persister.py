@@ -18,7 +18,7 @@ TOTAL_SIMULATIONS = 100000
 CHUNK_SIZE = 10000
 
 
-def run_fixed_monte_carlo(
+def persist_index_paths(
         historical_pct_changes: list,
         initial_investment,
         years,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             # print(min(historical_data))
             # exit()
 
-            run_fixed_monte_carlo(
+            persist_index_paths(
                 historical_pct_changes=historical_data,
                 initial_investment=100,
                 years=YEARS,
