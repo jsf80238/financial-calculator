@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -21,16 +19,6 @@ class MarketAssumption(str, Enum):
 
     significantly_below_average = "significantly_below_average"
     """λ = 0.70 — 30% weight on prior, 70% on sample mean."""
-
-
-def shrinkage_lambda_for_market_assumption(assumption: MarketAssumption) -> float:
-    if assumption is MarketAssumption.normal:
-        return 1.0
-    if assumption is MarketAssumption.below_average:
-        return 0.85
-    if assumption is MarketAssumption.significantly_below_average:
-        return 0.70
-    raise NotImplementedError(assumption)
 
 
 @dataclass(frozen=True)

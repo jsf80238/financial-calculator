@@ -1,3 +1,6 @@
+# Generate a parquet file for each investment type
+# Each row is a path, each column is a month
+
 from csv import DictReader
 import numpy as np
 import pandas as pd
@@ -7,9 +10,12 @@ import os
 from pathlib import Path
 # Imports above are standard Python
 # Imports below are 3rd-party
-from base import Logger
+from base import Logger, RETURNS_PATH
 
 logger = Logger().get_logger()
+YEARS = 50
+TOTAL_SIMULATIONS = 100000
+CHUNK_SIZE = 10000
 
 
 def run_fixed_monte_carlo(
@@ -73,7 +79,6 @@ def run_fixed_monte_carlo(
 
 
 if __name__ == "__main__":
-    RETURNS_PATH = Path.cwd().parent / "historical_data"
     RETURNS_DATA = RETURNS_PATH / "monthly_returns.csv"
     for index in sorted(RETURNS_PATH.glob("*.csv")):
         index_name = index.stem
@@ -90,8 +95,8 @@ if __name__ == "__main__":
             run_fixed_monte_carlo(
                 historical_pct_changes=historical_data,
                 initial_investment=100,
-                years=50,
-                total_sims=10000,
-                chunk_size=1000,  # 100k sims per chunk fits easily in 16GB RAM
+                years=YEARS,
+                total_sims=TOTAL_SIMULATIONS,
+                chunk_size=CHUNK_SIZE,
                 output_filepath=RETURNS_PATH / (index_name+".parquet")
             )

@@ -1,5 +1,6 @@
 import sys
 import logging
+from pathlib import Path
 # Imports above are standard Python
 # Imports below are 3rd-party
 
@@ -7,6 +8,9 @@ min_major, min_minor = 3, 11
 major, minor = sys.version_info[:2]
 if major < min_major or minor < min_minor:
     raise Exception(f"Your Python version needs to be at least {min_major}.{min_minor}.")
+
+
+RETURNS_PATH = Path(__file__).parent.parent / "historical_data"
 
 
 class Logger:

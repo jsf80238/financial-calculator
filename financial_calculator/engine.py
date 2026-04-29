@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from numpy.random import Generator
 
-from financial_calculator.models import CashFlow, MarketAssumption, Scenario, shrinkage_lambda_for_market_assumption
+from financial_calculator.models import CashFlow, MarketAssumption, Scenario
 from financial_calculator.returns_data import ReturnsData
 
 from base import Logger

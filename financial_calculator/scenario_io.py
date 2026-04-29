@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from pathlib import Path
 from typing import Any
@@ -74,3 +72,9 @@ def load_scenario(path: Path | str) -> Scenario:
     if not isinstance(loaded, dict):
         raise ValueError("scenario file must contain a mapping at the top level")
     return scenario_from_dict(loaded)
+
+
+if __name__ == "__main__":
+    scenario_file_path = Path(__file__).parent.parent / "example_scenario.yaml"
+    import pprint
+    pprint.pprint(load_scenario(scenario_file_path))
