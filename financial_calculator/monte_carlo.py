@@ -26,7 +26,6 @@ class MonteCarloSummary:
     horizon_months: int
     num_depleted: int
     num_survived: int
-    fraction_depleted: float
     depletion_month_counts: dict[int, int]
     """Histogram: depletion_month -> count (only paths that depleted)."""
 
@@ -55,16 +54,10 @@ class MonteCarloSummary:
 
 def run_monte_carlo(
     scenario: Scenario,
-    returns_data: ReturnsData,
     horizon_months: int,
     num_paths: int,
     market_assumption: MarketAssumption,
-    seed: int | None = None,
 ) -> MonteCarloSummary:
-    if num_paths < 1:
-        raise ValueError("num_paths must be at least 1")
-
-    rng = np.random.default_rng(seed)
     depleted = 0
     survived = 0
     depletion_months: list[int] = []
@@ -77,7 +70,7 @@ def run_monte_carlo(
             logger.info(f"Monte Carlo path {path_num}/{num_paths}")
         path_num += 1
         result: PathResult = simulate_path(
-            scenario, returns_data, horizon_months, market_assumption, rng
+            scenario, horizon_months, market_assumption
         )
         if result.depleted:
             depleted += 1
@@ -101,7 +94,6 @@ def run_monte_carlo(
         horizon_months=horizon_months,
         num_depleted=depleted,
         num_survived=survived,
-        fraction_depleted=frac,
         depletion_month_counts=counts,
         final_balance_mean=mean,
         final_balance_median=med,

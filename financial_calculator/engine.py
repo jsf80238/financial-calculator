@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 # Imports above are standard Python
 # Imports below are 3rd-party
-from financial_calculator.models import CashFlow, MarketAssumption, Scenario
+import numpy as np
+import pyarrow.parquet as pq
+from financial_calculator.models import CashFlow, MarketAssumption, Scenario, PathResult
 from base import Logger, RETURNS_PATH
-
 
 logger = Logger().get_logger()
 
@@ -34,18 +35,6 @@ def get_random_path(index_name: str):
     return path_series
 
 
-@dataclass(frozen=True)
-class PathResult:
-    """Outcome of one simulated path through month 0 .. horizon_months - 1."""
-
-    depleted: bool
-    depletion_month: int | None
-    """Month index (0-based) when total balance first went to zero or below, if depleted."""
-
-    final_total_balance: float
-    """Total balance after the last simulated month (0 if depleted on or before last month)."""
-
-
 def _monthly_inflation_rate(annual_factor: float) -> float:
     return (1.0 + annual_factor) ** (1.0 / 12.0) - 1.0
 
@@ -68,7 +57,6 @@ def _sum_expense(scenario: Scenario, month_index: int) -> float:
 
 def simulate_path(
     scenario: Scenario,
-    returns_data: ReturnsData,
     horizon_months: int,
     market_assumption: MarketAssumption,
 ) -> PathResult:
@@ -76,16 +64,11 @@ def simulate_path(
     One Monte Carlo path. Monthly order: returns → income (split) → expense (split).
     """
     indices = tuple(sorted(scenario.initial_allocations.keys()))
-    returns_data.require_indices(set(indices))
-    model = returns_data.parametric_model(
-        indices,
-        shrinkage_lambda=lam,
-        shrinkage_prior=None,
-    )
+    random_path_dict = dict()
+    for index_name in indices:
+        random_path_dict[index_name] = get_random_path(index_name)
 
-    total_init = sum(scenario.initial_allocations.values())
-    if total_init <= 0:
-        raise ValueError("initial allocations must sum to a positive total")
+    # total_init = sum(scenario.initial_allocations.values())
 
     balances: dict[str, float] = {
         k: float(v) for k, v in scenario.initial_allocations.items()
@@ -101,7 +84,7 @@ def simulate_path(
         total_after_returns = sum(balances.values())
         if total_after_returns <= 0:
             return PathResult(
-                depleted=True,
+                is_depleted=True,
                 depletion_month=month_index,
                 final_total_balance=0.0,
             )
@@ -116,14 +99,14 @@ def simulate_path(
         total_after_income = sum(balances.values())
         if total_after_income <= 0:
             return PathResult(
-                depleted=True,
+                is_depleted=True,
                 depletion_month=month_index,
                 final_total_balance=0.0,
             )
 
         if expense >= total_after_income:
             return PathResult(
-                depleted=True,
+                is_depleted=True,
                 depletion_month=month_index,
                 final_total_balance=0.0,
             )
@@ -135,13 +118,13 @@ def simulate_path(
         total_end = sum(balances.values())
         if total_end <= 0:
             return PathResult(
-                depleted=True,
+                is_depleted=True,
                 depletion_month=month_index,
                 final_total_balance=0.0,
             )
 
     return PathResult(
-        depleted=False,
+        is_depleted=False,
         depletion_month=None,
         final_total_balance=sum(balances.values()),
     )

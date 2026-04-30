@@ -4,6 +4,18 @@ from enum import Enum
 from typing import Mapping
 
 
+@dataclass(frozen=True)
+class PathResult:
+    """Outcome of one simulated path through month 0 .. horizon_months - 1."""
+
+    is_depleted: bool
+    depletion_month: int | None
+    """Month index (0-based) when total balance first went to zero or below, if depleted."""
+
+    final_total_balance: float
+    """Total balance after the last simulated month (0 if depleted on or before last month)."""
+
+
 class MarketAssumption(str, Enum):
     """
     How much to blend fitted sample means with ``mean_shrinkage_prior``:

@@ -32,24 +32,19 @@ def scenario_from_dict(data: dict[str, Any]) -> Scenario:
     alloc = data["initial_allocations"]
     if not isinstance(alloc, dict):
         raise TypeError("initial_allocations must be a mapping")
-    initial = {str(k): float(v) for k, v in alloc.items()}
+    initial_amount = sum(alloc.values())
+    if initial_amount <= 0:
+        raise ValueError("initial allocations must sum to positive amount")
+    initial_allocations_dict = {str(k): float(v) for k, v in alloc.items()}
     birthdates = data.get("birthdates")
 
     income_flows = _flows_from_mapping(data.get("income_flows"), "income_flows")
     expense_flows = _flows_from_mapping(data.get("expense_flows"), "expense_flows")
 
-    prior_raw = data.get("mean_shrinkage_prior")
-    shrink_prior: dict[str, float] | None = None
-    if prior_raw is not None:
-        if not isinstance(prior_raw, dict):
-            raise TypeError("mean_shrinkage_prior must be a mapping")
-        shrink_prior = {str(k): float(v) for k, v in prior_raw.items()}
-
     return Scenario(
-        initial_allocations=initial,
+        initial_allocations=initial_allocations_dict,
         income_flows=income_flows,
         expense_flows=expense_flows,
-        mean_shrinkage_prior=shrink_prior,
         birthdates=birthdates,
     )
 
