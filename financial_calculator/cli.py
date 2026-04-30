@@ -8,7 +8,7 @@ from pathlib import Path
 # Imports above are standard Python
 # Imports below are 3rd-party
 from base import Logger, RETURNS_PATH
-from financial_calculator.models import MarketAssumption, PathResult
+from financial_calculator.models import MarketAssumption, RebalancingApproach
 from financial_calculator.monte_carlo import run_monte_carlo
 from financial_calculator.scenario import load_scenario
 from financial_calculator.engine import simulate_path
@@ -40,12 +40,21 @@ p.add_argument(
     help="Number of Monte Carlo simulations to run",
     default=200,
 )
-market_assumption_choices = [m.value for m in MarketAssumption]
+market_assumption_choices = MarketAssumption.__members__.keys()
+market_assumption_default = MarketAssumption.NORMAL
 p.add_argument(
     "--market-assumption",
     choices=market_assumption_choices,
-    default=MarketAssumption.normal.value,
-    help=f"One of {'/'.join(market_assumption_choices)}, default: {MarketAssumption.normal.value}",
+    default=market_assumption_default,
+    help=f"One of {'/'.join(market_assumption_choices)}, default is '{market_assumption_default}'",
+)
+rebalancing_approach = RebalancingApproach.__members__.keys()
+rebalancing_approach_default = RebalancingApproach.DISTRIBUTE_EQUALLY
+p.add_argument(
+    "--rebalancing-approach",
+    choices=rebalancing_approach,
+    default=rebalancing_approach_default,
+    help=f"One of {'/'.join(rebalancing_approach)}, default is '{rebalancing_approach_default}'",
 )
 # p.add_argument(
 #     "--seed",
@@ -73,7 +82,10 @@ for _ in enumerate(range(iterations), 1):
         logger.info(f"Monte Carlo path {path_num}/{iterations}")
     path_num += 1
     result: PathResult = simulate_path(
-        scenario, horizon_months, market_assumption
+        scenario=scenario,
+        horizon_months=horizon_months,
+        market_assumption=market_assumption,
+        rebalancing_approach=rebalancing_approach,
     )
     if result.is_depleted:
         depleted += 1

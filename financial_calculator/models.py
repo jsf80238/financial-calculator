@@ -16,21 +16,15 @@ class PathResult:
     """Total balance after the last simulated month (0 if depleted on or before last month)."""
 
 
-class MarketAssumption(str, Enum):
-    """
-    How much to blend fitted sample means with ``mean_shrinkage_prior``:
+class MarketAssumption(Enum):
+    NORMAL = 1.0
+    BELOW_AVERAGE = 0.85
+    SIGNIFICANTLY_BELOW_AVERAGE = 0.70
 
-    Per index: ``μ = λ × fitted_mean + (1−λ) × prior`` (covariance from history).
-    """
 
-    normal = "normal"
-    """λ = 1 — use sample means only; prior is ignored."""
-
-    below_average = "below_average"
-    """λ = 0.85 — 15% weight on prior, 85% on sample mean."""
-
-    significantly_below_average = "significantly_below_average"
-    """λ = 0.70 — 30% weight on prior, 70% on sample mean."""
+class RebalancingApproach(Enum):
+    MAINTAIN_RATIOS = 1
+    DISTRIBUTE_EQUALLY = 2
 
 
 @dataclass(frozen=True)

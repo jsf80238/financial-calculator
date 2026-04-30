@@ -3,7 +3,7 @@ from dataclasses import dataclass
 # Imports below are 3rd-party
 import numpy as np
 import pyarrow.parquet as pq
-from financial_calculator.models import CashFlow, MarketAssumption, Scenario, PathResult
+from financial_calculator.models import CashFlow, Scenario, PathResult, MarketAssumption, RebalancingApproach
 from base import Logger, RETURNS_PATH
 
 logger = Logger().get_logger()
@@ -59,64 +59,74 @@ def simulate_path(
     scenario: Scenario,
     horizon_months: int,
     market_assumption: MarketAssumption,
+    rebalancing_approach: RebalancingApproach,
 ) -> PathResult:
     """
     One Monte Carlo path. Monthly order: returns → income (split) → expense (split).
     """
-    indices = tuple(sorted(scenario.initial_allocations.keys()))
+    index_name_list = list(scenario.initial_allocations.keys())
     random_path_dict = dict()
-    for index_name in indices:
+    for index_name in index_name_list:
         random_path_dict[index_name] = get_random_path(index_name)
 
-    # total_init = sum(scenario.initial_allocations.values())
-
-    balances: dict[str, float] = {
+    balance_dict: dict[str, float] = {
         k: float(v) for k, v in scenario.initial_allocations.items()
     }
+    initial_balance_dict = balance_dict.copy()
 
-    for month_index in range(horizon_months):
-        month_returns = model.sample_month_returns(rng)
+    for month_index in range(1, horizon_months+1):
+        logger.info(f"Month {month_index}.")
+        logger.info(f"Current balances: {", ".join(f'{k}=${int(v):,d}' for k, v in balance_dict.items())}")
+        logger.info(f"Total balance: ${int(sum(balance_dict.values())):,d}")
+        # Add from income streams and subtract from expense streams
+        income_to_distribute = _sum_income(scenario, month_index)
+        expense_to_distribute = _sum_expense(scenario, month_index)
+        if rebalancing_approach == RebalancingApproach.DISTRIBUTE_EQUALLY:
+            logger.info(f"Adding income of ${income_to_distribute:.2f} equally to accounts ...")
+            for index_name, current_value in balance_dict.items():
+                balance_dict[index_name] += income_to_distribute / len(balance_dict)
+            logger.info(f"Subtracting expense of ${expense_to_distribute:.2f} equally from accounts ...")
+            for index_name, current_value in balance_dict.items():
+                balance_dict[index_name] -= expense_to_distribute / len(balance_dict)
+        else:
+            total_balances = sum(balance_dict.values())
+            balance_ratio_dict = {k: v / total_balances for k, v in balance_dict.items()}
+            logger.info(f"Adding income of ${income_to_distribute:.2f} in these ratios: {balance_ratio_dict} ...")
+            for index_name, current_value in balance_dict.items():
+                balance_dict[index_name] += income_to_distribute * balance_ratio_dict[index_name]
+            logger.info(f"Subtracting expense of ${expense_to_distribute:.2f} in these ratios: {balance_ratio_dict} ...")
+            for index_name, current_value in balance_dict.items():
+                balance_dict[index_name] -= expense_to_distribute * balance_ratio_dict[index_name]
+        # Drop indexes with balances <= 0
+        # Distribute that negative value according to rebalancing_approach
+        total_negative = 0
+        for index_name in frozenset(balance_dict.keys()):
+            if balance_dict[index_name] <= 0:
+                total_negative += balance_dict[index_name]
+                del balance_dict[index_name]
+                index_name_list.remove(index_name)
+                logger.info(f"Dropping index {index_name} because its balance fell to $0.")
+        if total_negative < 0:
+            if rebalancing_approach == RebalancingApproach.DISTRIBUTE_EQUALLY:
+                logger.info(f"Subtracting negative balance of ${total_negative:.2f} equally from accounts ...")
+                for index_name, current_value in balance_dict.items():
+                    balance_dict[index_name] -= total_negative / len(balance_dict)
+            else:
+                total_balances = sum(balance_dict.values())
+                balance_ratio_dict = {k: v / total_balances for k, v in balance_dict.items()}
+                logger.info(f"Subtracting negative balance of ${total_negative:.2f} in these ratios: {balance_ratio_dict} ...")
+                for index_name, current_value in balance_dict.items():
+                    balance_dict[index_name] -= total_negative * balance_ratio_dict[index_name]
+        # Add/subtract based on investment return
+        for index_name in index_name_list:
+            investment_return = random_path_dict[index_name][month_index] / 100  # Values are based on a $100 initial investment
+            new_balance = initial_balance_dict[index_name] * investment_return
+            delta = int(new_balance - balance_dict[index_name])
+            delta_percent = 100 * delta / balance_dict[index_name]
+            logger.info(f"Applying investment return of {delta_percent:.2f}% (${delta:,d}) to {index_name} ...")
+            balance_dict[index_name] += new_balance
 
-        for name in indices:
-            r = month_returns[name]
-            balances[name] *= 1.0 + r
-
-        total_after_returns = sum(balances.values())
-        if total_after_returns <= 0:
-            return PathResult(
-                is_depleted=True,
-                depletion_month=month_index,
-                final_total_balance=0.0,
-            )
-
-        income = _sum_income(scenario, month_index)
-        expense = _sum_expense(scenario, month_index)
-
-        if income != 0.0:
-            for name in indices:
-                balances[name] += income * balances[name] / total_after_returns
-
-        total_after_income = sum(balances.values())
-        if total_after_income <= 0:
-            return PathResult(
-                is_depleted=True,
-                depletion_month=month_index,
-                final_total_balance=0.0,
-            )
-
-        if expense >= total_after_income:
-            return PathResult(
-                is_depleted=True,
-                depletion_month=month_index,
-                final_total_balance=0.0,
-            )
-
-        if expense > 0.0:
-            for name in indices:
-                balances[name] -= expense * balances[name] / total_after_income
-
-        total_end = sum(balances.values())
-        if total_end <= 0:
+        if sum(balance_dict.values()) <= 0:
             return PathResult(
                 is_depleted=True,
                 depletion_month=month_index,
@@ -126,5 +136,16 @@ def simulate_path(
     return PathResult(
         is_depleted=False,
         depletion_month=None,
-        final_total_balance=sum(balances.values()),
+        final_total_balance=sum(balance_dict.values()),
+    )
+
+
+if __name__ == "__main__":
+    from financial_calculator.scenario import load_scenario
+    from pathlib import Path
+    simulate_path(
+        scenario=load_scenario(Path(__file__).parent.parent / "example_scenario.yaml"),
+        horizon_months=50*12,
+        market_assumption=MarketAssumption.BELOW_AVERAGE,
+        rebalancing_approach=RebalancingApproach.DISTRIBUTE_EQUALLY,
     )
