@@ -25,12 +25,12 @@ income_flows:
   salary_jason_part_time:
     start_month: 24
     end_month: 84
-    amount: 3000
+    amount: 1
     annual_inflation_factor: 0.025
   salary_julia_part_time:
     start_month: 0
     end_month: 24
-    amount: 2000
+    amount: 1
     annual_inflation_factor: 0.025
   jason_social_security:
     start_month: 144

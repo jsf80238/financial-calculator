@@ -87,15 +87,15 @@ rebalancing_approach = RebalancingApproach(args.rebalancing_approach)
 iterations = args.iterations
 horizon_months = args.horizon_months
 
-# Logger().set_level("WARN")
+Logger().set_level("WARN")
 
-iterations = 50
+iterations = 100
 depleted, survived = 0, 0
 depletion_month_counter = collections.Counter()
 final_survivor_list = list()
 for path_num, _ in enumerate(range(iterations), 1):
     if path_num % 10 == 0:
-        logger.info(f"Monte Carlo path {path_num}/{iterations}")
+        logger.warning(f"Monte Carlo path {path_num}/{iterations}")
     result: PathResult = simulate_path(
         scenario=scenario,
         horizon_months=horizon_months,
@@ -111,10 +111,10 @@ for path_num, _ in enumerate(range(iterations), 1):
         final_survivor_list.append(result.final_total_balance)
 
 surv_sorted = sorted(final_survivor_list)
-mean = sum(final_survivor_list) / len(final_survivor_list) if final_survivor_list else float("nan")
-med = _percentile_nearest(surv_sorted, 50.0)
-p10 = _percentile_nearest(surv_sorted, 10.0)
-p90 = _percentile_nearest(surv_sorted, 90.0)
+final_balance_mean = sum(final_survivor_list) / len(final_survivor_list) if final_survivor_list else float("nan")
+final_balance_median = _percentile_nearest(surv_sorted, 50.0)
+final_balance_p10 = _percentile_nearest(surv_sorted, 10.0)
+final_balance_p90 = _percentile_nearest(surv_sorted, 90.0)
 
 if args.json_out:
     pass
@@ -125,12 +125,12 @@ else:
     print(f"Survived: {survived} ({survived/iterations:.2%})")
     if len(depletion_month_counter) > 0:
         print("Depletion month (histogram):", sorted(depletion_month_counter))
-    # if summary.num_survived > 0:
-    #     print("Final balance (survivors):")
-    #     print(f"  mean:   {summary.final_balance_mean:,.2f}")
-    #     print(f"  median: {summary.final_balance_median:,.2f}")
-    #     print(f"  p10:    {summary.final_balance_p10:,.2f}")
-    #     print(f"  p90:    {summary.final_balance_p90:,.2f}")
+    if survived > 0:
+        print("Final balance (survivors):")
+        print(f"  mean:   {final_balance_mean:,.2f}")
+        print(f"  median: {final_balance_median:,.2f}")
+        print(f"  p10:    {final_balance_p10:,.2f}")
+        print(f"  p90:    {final_balance_p90:,.2f}")
     median_depletion_month = statistics.median(depletion_month_counter.elements())
     median_depletion_as_year_month = datetime.today()
     print("Median depletion month:", )

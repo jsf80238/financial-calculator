@@ -11,6 +11,7 @@ exist exactly in the input (no nearest-trading-day fallback).
 import argparse
 import calendar
 import csv
+import os
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -158,7 +159,7 @@ def main() -> int:
                         ]
                     )
 
-    print(f"Wrote {out_path}")
+    print(f"Wrote {os.stat(out_path).st_size} bytes to {out_path}")
     return 0
 
 

@@ -17,9 +17,14 @@ class PathResult:
 
 
 class MarketAssumption(Enum):
+    """
+    Subtract this amount from each month's return.
+    So if the user selects BELOW_AVERAGE, and BELOW_AVERAGE is set to 25%,
+    a return of 5% would be changed to 4%, and a return of -5% would be changed to -6%.
+    """
     NORMAL = 0.0
-    BELOW_AVERAGE = -0.25  # Subtract 25% from the return. So a return of 5% would be changed to 4%, and a return of -5% would be changed to -6%.
-    SIGNIFICANTLY_BELOW_AVERAGE = -0.5  # Subtract 50% from the return. So a return of 5% would be changed to 2.5%, and a return of -5% would be changed to -7.5%.
+    BELOW_AVERAGE = -0.4
+    SIGNIFICANTLY_BELOW_AVERAGE = -0.8
 
 
 class RebalancingApproach(Enum):
