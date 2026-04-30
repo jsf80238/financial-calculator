@@ -14,8 +14,8 @@ from base import Logger, RETURNS_PATH
 
 logger = Logger().get_logger()
 YEARS = 50
-TOTAL_SIMULATIONS = 100000
-CHUNK_SIZE = 10000
+TOTAL_SIMULATIONS = 50000
+CHUNK_SIZE = 5000
 
 
 def persist_index_paths(
@@ -28,13 +28,13 @@ def persist_index_paths(
 ):
     months = years * 12
 
-    # 1. Fix the "Divide by Zero" / Percentage issue
     data = np.array(historical_pct_changes)
+    # 1. Fix the "Divide by Zero" / Percentage issue
     if np.any(data > 1.0) or np.any(data < -1.0):
         data = data / 100.0  # Convert 5.0 to 0.05
 
-    # Safety clip to prevent log(0) if a -100% exists in data
-    data = np.clip(data, -0.9999, None)
+    # # Safety clip to prevent log(0) if a -100% exists in data
+    # data = np.clip(data, -0.9999, None)
 
     log_returns = np.log(1 + data)
     mu = np.mean(log_returns)
@@ -82,6 +82,8 @@ if __name__ == "__main__":
     RETURNS_DATA = RETURNS_PATH / "monthly_returns.csv"
     for index in sorted(RETURNS_PATH.glob("*.csv")):
         index_name = index.stem
+        if False and index_name != 'sp500':
+            continue
         if index_name == "monthly_returns":
             continue
         logger.info(f"Working on index '{index_name}' ...")
@@ -94,7 +96,7 @@ if __name__ == "__main__":
 
             persist_index_paths(
                 historical_pct_changes=historical_data,
-                initial_investment=100,
+                initial_investment=1,
                 years=YEARS,
                 total_sims=TOTAL_SIMULATIONS,
                 chunk_size=CHUNK_SIZE,

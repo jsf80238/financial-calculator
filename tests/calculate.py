@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 # Imports above are standard Python
 # Imports below are 3rd-party
-from base import Logger, RETURNS_PATH
+from financial_calculator.base import Logger, RETURNS_PATH
 from dateutil import relativedelta
 
 
@@ -41,11 +41,11 @@ def get_random_path(index_name: str):
 
 if __name__ == "__main__":
     # --- Execution ---
-    index_name = "sp500"
+    index_name = "3month"
 
-    max = 0
-    min = 9999999999
-    for i in range(1):
+    max_value = 0
+    min_value = 9999999999
+    for i in range(50):
         # Pull a random "journey"
         single_path = get_random_path(index_name)
         # month = date.today().replace(day=1)
@@ -54,17 +54,17 @@ if __name__ == "__main__":
             # print(month.isoformat(), result)
 
         # --- Visualize the Journey ---
-        plt.plot(single_path)
-        plt.figure(figsize=(10, 6))
-        plt.title(f"Random {index_name} Simulation (50 Years)")
-        plt.xlabel("Month")
-        plt.ylabel("Investment Value ($)")
-        plt.grid(True, alpha=0.3)
-        plt.show()
+        # plt.plot(single_path)
+        # plt.figure(figsize=(10, 6))
+        # plt.title(f"Random {index_name} Simulation (50 Years)")
+        # plt.xlabel("Month")
+        # plt.ylabel("Investment Value ($)")
+        # plt.grid(True, alpha=0.3)
+        # plt.show()
         final_value = single_path.iloc[-1]
-        if final_value > max:
-            max = final_value
-        if final_value < min:
-            min = final_value
+        if final_value > max_value:
+            max_value = final_value
+        if final_value < min_value:
+            min_value = final_value
         # logger.info(f"Final Value after 50 years: ${final_value:,.2f}")
-    logger.info(f"Min: {min}, Max: {max}")
+    logger.info(f"Min: {min_value}, Max: {max_value}")

@@ -10,10 +10,6 @@ initial_allocations:
   russell: 200000
   sp400: 200000
   sp500: 1800000
-#
-#mean_shrinkage_prior:
-#  sp500: 0.000
-#  3month: 0.000
 
 income_flows:
   salary_jason_full_time:
@@ -61,5 +57,5 @@ expense_flows:
   living:
     start_month: 0
     end_month: 99999
-    amount: 12750
-    annual_inflation_factor: 0.04
+    amount: 15000
+    annual_inflation_factor: 0.05

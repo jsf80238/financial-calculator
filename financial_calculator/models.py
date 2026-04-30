@@ -17,9 +17,9 @@ class PathResult:
 
 
 class MarketAssumption(Enum):
-    NORMAL = 1.0
-    BELOW_AVERAGE = 0.85
-    SIGNIFICANTLY_BELOW_AVERAGE = 0.70
+    NORMAL = 0.0
+    BELOW_AVERAGE = -0.25  # Subtract 25% from the return. So a return of 5% would be changed to 4%, and a return of -5% would be changed to -6%.
+    SIGNIFICANTLY_BELOW_AVERAGE = -0.5  # Subtract 50% from the return. So a return of 5% would be changed to 2.5%, and a return of -5% would be changed to -7.5%.
 
 
 class RebalancingApproach(Enum):
@@ -48,9 +48,6 @@ class Scenario:
     initial_allocations: Mapping[str, float]
     income_flows: Mapping[str, CashFlow] = field(default_factory=dict)
     expense_flows: Mapping[str, CashFlow] = field(default_factory=dict)
-    #: Monthly return anchor per index (decimal) when ``--market-assumption`` is
-    #: ``below_average`` or ``significantly_below_average``. Omitted indices default to ``0``.
-    mean_shrinkage_prior: Mapping[str, float] | None = None
     birthdates: dict = field(default_factory=list)
 
     def __post_init__(self) -> None:

@@ -82,21 +82,29 @@ def simulate_path(
         income_to_distribute = _sum_income(scenario, month_index)
         expense_to_distribute = _sum_expense(scenario, month_index)
         if rebalancing_approach == RebalancingApproach.DISTRIBUTE_EQUALLY:
-            logger.info(f"Adding income of ${income_to_distribute:.2f} equally to accounts ...")
+            logger.debug(f"Adding income of ${income_to_distribute:,.2f} equally to accounts ...")
             for index_name, current_value in balance_dict.items():
-                balance_dict[index_name] += income_to_distribute / len(balance_dict)
-            logger.info(f"Subtracting expense of ${expense_to_distribute:.2f} equally from accounts ...")
+                income = income_to_distribute / len(balance_dict)
+                balance_dict[index_name] += income
+                logger.debug(f"${income:,.2f} to {index_name} ...")
+            logger.debug(f"Subtracting expense of ${expense_to_distribute:,.2f} equally from accounts ...")
             for index_name, current_value in balance_dict.items():
-                balance_dict[index_name] -= expense_to_distribute / len(balance_dict)
+                expense = expense_to_distribute / len(balance_dict)
+                balance_dict[index_name] -= expense
+                logger.debug(f"${expense:,.2f} from {index_name} ...")
         else:
             total_balances = sum(balance_dict.values())
             balance_ratio_dict = {k: v / total_balances for k, v in balance_dict.items()}
-            logger.info(f"Adding income of ${income_to_distribute:.2f} in these ratios: {balance_ratio_dict} ...")
+            logger.debug(f"Adding income of ${income_to_distribute:,.2f} in these ratios: {balance_ratio_dict} ...")
             for index_name, current_value in balance_dict.items():
-                balance_dict[index_name] += income_to_distribute * balance_ratio_dict[index_name]
-            logger.info(f"Subtracting expense of ${expense_to_distribute:.2f} in these ratios: {balance_ratio_dict} ...")
+                income = income_to_distribute * balance_ratio_dict[index_name]
+                balance_dict[index_name] += income
+                logger.debug(f"${income:,.2f} to {index_name} ...")
+            logger.debug(f"Subtracting expense of ${expense_to_distribute:,.2f} in these ratios: {balance_ratio_dict} ...")
             for index_name, current_value in balance_dict.items():
-                balance_dict[index_name] -= expense_to_distribute * balance_ratio_dict[index_name]
+                expense = expense_to_distribute * balance_ratio_dict[index_name]
+                balance_dict[index_name] -= expense
+                logger.debug(f"${expense:,.2f} from {index_name} ...")
         # Drop indexes with balances <= 0
         # Distribute that negative value according to rebalancing_approach
         total_negative = 0
@@ -108,23 +116,27 @@ def simulate_path(
                 logger.info(f"Dropping index {index_name} because its balance fell to $0.")
         if total_negative < 0:
             if rebalancing_approach == RebalancingApproach.DISTRIBUTE_EQUALLY:
-                logger.info(f"Subtracting negative balance of ${total_negative:.2f} equally from accounts ...")
+                logger.info(f"Subtracting negative balance of ${total_negative:,.2f} equally from accounts ...")
                 for index_name, current_value in balance_dict.items():
                     balance_dict[index_name] -= total_negative / len(balance_dict)
             else:
                 total_balances = sum(balance_dict.values())
                 balance_ratio_dict = {k: v / total_balances for k, v in balance_dict.items()}
-                logger.info(f"Subtracting negative balance of ${total_negative:.2f} in these ratios: {balance_ratio_dict} ...")
+                logger.info(f"Subtracting negative balance of ${total_negative:,.2f} in these ratios: {balance_ratio_dict} ...")
                 for index_name, current_value in balance_dict.items():
                     balance_dict[index_name] -= total_negative * balance_ratio_dict[index_name]
         # Add/subtract based on investment return
         for index_name in index_name_list:
-            investment_return = random_path_dict[index_name][month_index] / 100  # Values are based on a $100 initial investment
+            investment_return = random_path_dict[index_name][month_index]  # Values are based on a $1 initial investment
+            nominal_investment_return = investment_return
+            if market_assumption.value != 0:
+                investment_return += market_assumption.value * investment_return
+            logger.debug(f"Nominal value of $1 after this number of months: ${nominal_investment_return:,.2f}, and with market assumption: ${investment_return:,.2f}.")
             new_balance = initial_balance_dict[index_name] * investment_return
-            delta = int(new_balance - balance_dict[index_name])
+            delta = new_balance - balance_dict[index_name]
             delta_percent = 100 * delta / balance_dict[index_name]
-            logger.info(f"Applying investment return of {delta_percent:.2f}% (${delta:,d}) to {index_name} ...")
-            balance_dict[index_name] += new_balance
+            logger.debug(f"Applying investment return of {delta_percent:,.2f}% (${delta:,.2f}) to {index_name} ...")
+            balance_dict[index_name] = new_balance
 
         if sum(balance_dict.values()) <= 0:
             return PathResult(
@@ -136,16 +148,18 @@ def simulate_path(
     return PathResult(
         is_depleted=False,
         depletion_month=None,
-        final_total_balance=sum(balance_dict.values()),
+        final_total_balance=float(sum(balance_dict.values())),
     )
 
 
 if __name__ == "__main__":
     from financial_calculator.scenario import load_scenario
     from pathlib import Path
-    simulate_path(
+    # logger.setLevel("WARN")
+    path_result = simulate_path(
         scenario=load_scenario(Path(__file__).parent.parent / "example_scenario.yaml"),
-        horizon_months=50*12,
-        market_assumption=MarketAssumption.BELOW_AVERAGE,
+        horizon_months=40*12,
+        market_assumption=MarketAssumption.SIGNIFICANTLY_BELOW_AVERAGE,
         rebalancing_approach=RebalancingApproach.DISTRIBUTE_EQUALLY,
     )
+    logger.warning(path_result)
