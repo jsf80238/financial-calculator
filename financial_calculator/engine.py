@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 # Imports above are standard Python
 # Imports below are 3rd-party
+import pandas as pd
 import numpy as np
 import pyarrow.parquet as pq
 from financial_calculator.models import CashFlow, Scenario, PathResult, MarketAssumption, RebalancingApproach
@@ -30,6 +31,19 @@ def get_random_path(index_name: str):
 
     # Convert to a Series for easier plotting (transpose so index is Month)
     path_series = random_sim.iloc[0]
+    path_series.index = [int(m[1:]) for m in path_series.index]  # Convert 'M001' to 1
+
+    return path_series
+
+
+def get_worst_path(index_name: str):
+    # 1. Open the Parquet file (metadata only)
+    filepath = RETURNS_PATH / f"{index_name}.parquet"
+    pfile = pq.ParquetFile(filepath)
+    final_month = pd.read_parquet(filepath, columns=['M600'])
+    worst_sim_idx = final_month['M600'].idxmin()
+    path_series = pd.read_parquet(filepath).iloc[worst_sim_idx]
+    # Convert to a Series for easier plotting (transpose so index is Month)
     path_series.index = [int(m[1:]) for m in path_series.index]  # Convert 'M001' to 1
 
     return path_series
@@ -67,7 +81,8 @@ def simulate_path(
     index_name_list = list(scenario.initial_allocations.keys())
     random_path_dict = dict()
     for index_name in index_name_list:
-        random_path_dict[index_name] = get_random_path(index_name)
+        # random_path_dict[index_name] = get_random_path(index_name)
+        random_path_dict[index_name] = get_worst_path(index_name)
 
     balance_dict: dict[str, float] = {
         k: float(v) for k, v in scenario.initial_allocations.items()
@@ -156,10 +171,11 @@ if __name__ == "__main__":
     from financial_calculator.scenario import load_scenario
     from pathlib import Path
     # logger.setLevel("WARN")
+    Logger().set_file("/tmp/financial.log")
     path_result = simulate_path(
         scenario=load_scenario(Path(__file__).parent.parent / "example_scenario.yaml"),
         horizon_months=40*12,
-        market_assumption=MarketAssumption.SIGNIFICANTLY_BELOW_AVERAGE,
-        rebalancing_approach=RebalancingApproach.DISTRIBUTE_EQUALLY,
+        market_assumption=MarketAssumption.NORMAL,
+        rebalancing_approach=RebalancingApproach.MAINTAIN_RATIOS,
     )
     logger.warning(path_result)

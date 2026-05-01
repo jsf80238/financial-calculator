@@ -15,11 +15,12 @@ RETURNS_PATH = Path(__file__).parent.parent / "historical_data"
 
 class Logger:
     __instance = None
+    # Formatting
+    date_format = '%Y-%m-%dT%H:%M:%S%z'
+    formatter = logging.Formatter('%(asctime)s | %(levelname)8s | %(message)s', datefmt=date_format)
 
     def __new__(cls,
                 level: [str | int] = None,
-                is_generate_session_id: bool = False,
-                session_id: str = None,
                 **kwargs
                 ):
         """
@@ -34,16 +35,10 @@ class Logger:
             cls.logger = logging.getLogger()
             # Set overall logging level, will be overridden by the handlers
             cls.logger.setLevel(logging.DEBUG)
-            # Formatting
-            date_format = '%Y-%m-%dT%H:%M:%S%z'
-            if is_generate_session_id:
-                formatter = logging.Formatter('%(asctime)s | %(levelname)8s | session_id=%(session_id)s | %(message)s', datefmt=date_format)
-            else:
-                formatter = logging.Formatter('%(asctime)s | %(levelname)8s | %(message)s', datefmt=date_format)
             # Logging to STDERR
             console_handler = logging.StreamHandler()
             console_handler.setLevel(cls.level)
-            console_handler.setFormatter(formatter)
+            console_handler.setFormatter(cls.formatter)
             # Add console handler to logger
             cls.logger.addHandler(console_handler)
             cls.__instance = object.__new__(cls)
@@ -58,7 +53,20 @@ class Logger:
         for handler in cls.logger.handlers:
             handler.setLevel(level)
 
+    @classmethod
+    def set_file(cls, file_path: Path | str, is_append: bool = False) -> None:
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not file_path.parent.exists():
+            cls.logger.error(f"File path {file_path} does not exist")
+        else:
+            file_handler = logging.FileHandler(file_path, mode='a' if is_append else 'w')
+            file_handler.setLevel(cls.logger.level)
+            file_handler.setFormatter(cls.formatter)
+            cls.logger.addHandler(file_handler)
+
 
 if __name__ == "__main__":
     logger = Logger().get_logger()
+    Logger().set_file("/tmp/test.log", is_append=True)
     logger.info("a logging message")

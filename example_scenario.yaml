@@ -15,12 +15,12 @@ income_flows:
   salary_jason_full_time:
     start_month: 0
     end_month: 24
-    amount: 8000
+    amount: 2500
     annual_inflation_factor: 0.025
   salary_julia_full_time:
     start_month: 0
     end_month: 24
-    amount: 2700
+    amount: 750
     annual_inflation_factor: 0.025
   salary_jason_part_time:
     start_month: 24
