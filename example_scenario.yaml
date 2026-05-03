@@ -5,11 +5,11 @@ birthdates:
 initial_allocations:
   3month: 850000
   bond: 200000
-  ftse100: 50000
+  ftse100: 100000
   ftse250: 100000
-  nikkei225: 50000
-  russell: 200000
-  sp400: 200000
+  nikkei: 100000
+  russell: 250000
+  sp400: 250000
   sp500: 1800000
 
 income_flows:
@@ -32,8 +32,8 @@ income_flows:
     annual_inflation_factor: 0.025
     tax_rate: 0.20
   salary_julia_part_time:
-    start_month: 0
-    end_month: 24
+    start_month: 24
+    end_month: 84
     amount: 1000
     annual_inflation_factor: 0.025
     tax_rate: 0.20
@@ -55,19 +55,19 @@ expense_flows:
     start_month: 24
     end_month: 108
     amount: 1250
-    annual_inflation_factor: 0.05
+    annual_inflation_factor: 0.04
   health_insurance_julia:
     start_month: 24
     end_month: 72
     amount: 1250
-    annual_inflation_factor: 0.05
+    annual_inflation_factor: 0.04
   living_pre_retirement:
     start_month: 0
     end_month: 108
-    amount: 10000
-    annual_inflation_factor: 0.05
+    amount: 12500
+    annual_inflation_factor: 0.04
   living_retirement:
     start_month: 109
     end_month: 99999
-    amount: 15000
-    annual_inflation_factor: 0.05
+    amount: 12500
+    annual_inflation_factor: 0.04
