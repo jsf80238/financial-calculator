@@ -5,8 +5,9 @@ birthdates:
 initial_allocations:
   3month: 850000
   bond: 200000
-  ftse: 200000
-  ishares: 400000
+  ftse100: 50000
+  ftse250: 100000
+  nikkei225: 50000
   russell: 200000
   sp400: 200000
   sp500: 1800000

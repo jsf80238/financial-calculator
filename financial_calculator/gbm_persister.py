@@ -82,7 +82,7 @@ if __name__ == "__main__":
     RETURNS_DATA = RETURNS_PATH / "monthly_returns.csv"
     for index in sorted(RETURNS_PATH.glob("*.csv")):
         index_name = index.stem
-        if False and index_name != 'sp500':
+        if True and index_name != '3month':
             continue
         if index_name == "monthly_returns":
             continue
