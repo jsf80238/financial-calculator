@@ -15,6 +15,7 @@ def _flow_from_dict(d: Any) -> CashFlow:
         end_month=int(d["end_month"]),
         amount=float(d["amount"]),
         annual_inflation_factor=float(d["annual_inflation_factor"]),
+        tax_rate=float(d.get("tax_rate", 0.0)),
     )
 
 

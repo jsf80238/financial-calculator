@@ -62,7 +62,11 @@ def _flow_nominal_for_month(flow: CashFlow, month_index: int) -> float:
 
 
 def _sum_income(scenario: Scenario, month_index: int) -> float:
-    return sum(_flow_nominal_for_month(f, month_index) for f in scenario.income_flows.values())
+    result = 0.0
+    for flow_name in scenario.income_flows:
+        result += _flow_nominal_for_month(scenario.income_flows[flow_name], month_index)
+        result *= 1 - scenario.income_flows[flow_name].tax_rate
+    return result
 
 
 def _sum_expense(scenario: Scenario, month_index: int) -> float:
@@ -146,7 +150,7 @@ def simulate_path(
             nominal_investment_return = investment_return
             if market_assumption.value != 0:
                 investment_return += market_assumption.value * investment_return
-            logger.debug(f"Nominal value of $1 after this number of months: ${nominal_investment_return:,.2f}, and with market assumption: ${investment_return:,.2f}.")
+            # logger.debug(f"Nominal value of $1 after this number of months: ${nominal_investment_return:,.2f}, and with market assumption: ${investment_return:,.2f}.")
             new_balance = initial_balance_dict[index_name] * investment_return
             delta = new_balance - balance_dict[index_name]
             delta_percent = 100 * delta / balance_dict[index_name]
@@ -171,6 +175,7 @@ if __name__ == "__main__":
     from financial_calculator.scenario import load_scenario
     from pathlib import Path
     # logger.setLevel("WARN")
+    logger.setLevel("DEBUG")
     Logger().set_file("/tmp/financial.log")
     path_result = simulate_path(
         scenario=load_scenario(Path(__file__).parent.parent / "example_scenario.yaml"),

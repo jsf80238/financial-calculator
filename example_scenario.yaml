@@ -15,33 +15,39 @@ income_flows:
   salary_jason_full_time:
     start_month: 0
     end_month: 24
-    amount: 2500
+    amount: 13000
     annual_inflation_factor: 0.025
+    tax_rate: 0.25
   salary_julia_full_time:
     start_month: 0
     end_month: 24
-    amount: 750
+    amount: 4000
     annual_inflation_factor: 0.025
+    tax_rate: 0.25
   salary_jason_part_time:
     start_month: 24
     end_month: 84
-    amount: 1
+    amount: 5000
     annual_inflation_factor: 0.025
+    tax_rate: 0.20
   salary_julia_part_time:
     start_month: 0
     end_month: 24
-    amount: 1
+    amount: 1000
     annual_inflation_factor: 0.025
+    tax_rate: 0.20
   jason_social_security:
     start_month: 144
     end_month: 99999
     amount: 4713
     annual_inflation_factor: 0.025
+    tax_rate: 0.15
   julia_social_security:
     start_month: 108
     end_month: 99999
     amount: 1621
     annual_inflation_factor: 0.025
+    tax_rate: 0.15
 
 expense_flows:
   health_insurance_jason:
@@ -54,8 +60,13 @@ expense_flows:
     end_month: 72
     amount: 1250
     annual_inflation_factor: 0.05
-  living:
+  living_pre_retirement:
     start_month: 0
+    end_month: 108
+    amount: 10000
+    annual_inflation_factor: 0.05
+  living_retirement:
+    start_month: 109
     end_month: 99999
     amount: 15000
     annual_inflation_factor: 0.05

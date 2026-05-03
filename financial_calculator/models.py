@@ -40,6 +40,7 @@ class CashFlow:
     end_month: int
     amount: float
     annual_inflation_factor: float
+    tax_rate: float
 
     def __post_init__(self) -> None:
         if self.end_month < self.start_month:
