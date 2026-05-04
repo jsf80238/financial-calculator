@@ -1,12 +1,13 @@
 import argparse
 import collections
-from datetime import datetime
+from datetime import datetime, date
 import json
 import statistics
 import sys
 from pathlib import Path
 # Imports above are standard Python
 # Imports below are 3rd-party
+from dateutil.relativedelta import relativedelta
 from base import Logger, RETURNS_PATH
 from financial_calculator.models import MarketAssumption, RebalancingApproach, PathResult
 from financial_calculator.scenario import load_scenario
@@ -89,7 +90,7 @@ horizon_months = args.horizon_months
 
 Logger().set_level("WARN")
 
-iterations = 100
+iterations = 50
 depleted, survived = 0, 0
 depletion_month_counter = collections.Counter()
 final_survivor_list = list()
@@ -113,8 +114,8 @@ for path_num, _ in enumerate(range(iterations), 1):
 surv_sorted = sorted(final_survivor_list)
 final_balance_mean = sum(final_survivor_list) / len(final_survivor_list) if final_survivor_list else float("nan")
 final_balance_median = _percentile_nearest(surv_sorted, 50.0)
-final_balance_p10 = _percentile_nearest(surv_sorted, 10.0)
-final_balance_p90 = _percentile_nearest(surv_sorted, 90.0)
+# final_balance_p10 = _percentile_nearest(surv_sorted, 10.0)
+# final_balance_p90 = _percentile_nearest(surv_sorted, 90.0)
 
 if args.json_out:
     pass
@@ -124,13 +125,16 @@ else:
     print(f"Depleted: {depleted} ({depleted/iterations:.2%})")
     print(f"Survived: {survived} ({survived/iterations:.2%})")
     if len(depletion_month_counter) > 0:
-        print("Depletion month (histogram):", sorted(depletion_month_counter))
+        print("Depletion month (histogram):", depletion_month_counter.most_common(iterations))
     if survived > 0:
         print("Final balance (survivors):")
         print(f"  mean:   {final_balance_mean:,.2f}")
         print(f"  median: {final_balance_median:,.2f}")
-        print(f"  p10:    {final_balance_p10:,.2f}")
-        print(f"  p90:    {final_balance_p90:,.2f}")
+        # print(f"  p10:    {final_balance_p10:,.2f}")
+        # print(f"  p90:    {final_balance_p90:,.2f}")
     median_depletion_month = statistics.median(depletion_month_counter.elements())
-    median_depletion_as_year_month = datetime.today()
-    print("Median depletion month:", )
+    median_depletion_as_year_month = date.today().replace(day=1) + relativedelta(months=int(median_depletion_month))
+    print(f"Median depletion at:")
+    for name, birth_year_month in scenario.birthdates.items():
+        diff = relativedelta(median_depletion_as_year_month, birth_year_month)
+        print(f"  {name}: {diff.years} years, {diff.months} months")

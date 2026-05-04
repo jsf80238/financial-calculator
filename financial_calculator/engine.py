@@ -10,15 +10,6 @@ from base import Logger, RETURNS_PATH
 logger = Logger().get_logger()
 # 1. Load the Master History once
 master_history_df = pd.read_csv(RETURNS_PATH / "master_history.csv", index_col="Date")
-# 2. Determine how many months to simulate (e.g., 50 years)
-max_months_to_sim = 50 * 12
-# 3. Pick a random sequence of row indices
-# This is the "Joint" part: one index represents one month for ALL assets
-random_indices = np.random.choice(len(master_history_df), size=max_months_to_sim, replace=True)
-# 4. Grab the entire block of returns for all assets in the journey
-# Columns will be sorted alphabetically thanks to your bootstrap_persister.py logic
-journey_returns = master_history_df.iloc[random_indices]
-random_path_dict = journey_returns.to_dict(orient='list')
 
 
 def _monthly_inflation_rate(annual_factor: float) -> float:
@@ -82,6 +73,13 @@ def simulate_path(
         k: float(v) for k, v in scenario.initial_allocations.items()
     }
 
+    # Pick a random sequence of row indices
+    random_indices = np.random.choice(len(master_history_df), size=horizon_months, replace=True)
+    # Grab the entire block of returns for all assets in the journey
+    # Columns will be sorted alphabetically
+    journey_returns = master_history_df.iloc[random_indices]
+    random_path_dict = journey_returns.to_dict(orient='list')
+
     for month_index in range(1, horizon_months+1):
         logger.info(f"Month {month_index}.")
         logger.info(f"Current balances: {", ".join(f'{k}=${int(v):,d}' for k, v in balance_dict.items())}")
@@ -108,6 +106,7 @@ def simulate_path(
             monthly_return = random_path_dict[index_name][month_index]
             if market_assumption.value != 0:
                 monthly_return += (market_assumption.value * monthly_return)
+                logger.info(f"Reducing return by {market_assumption.value * 100:,.2f}% for {index_name}...")
             # Calculate the dollar change for THIS month
             current_balance = balance_dict[index_name]
             delta = current_balance * monthly_return

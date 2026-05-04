@@ -1,5 +1,5 @@
 birthdates:
-  julia: 1964-01-01
+  julia: 1964-12-01
   jason: 1967-09-01
 
 initial_allocations:
@@ -53,21 +53,31 @@ income_flows:
 expense_flows:
   health_insurance_jason:
     start_month: 24
-    end_month: 108
+    end_month: 72
     amount: 1250
     annual_inflation_factor: 0.04
   health_insurance_julia:
     start_month: 24
-    end_month: 72
+    end_month: 48
     amount: 1250
+    annual_inflation_factor: 0.04
+  medicare_jason:
+    start_month: 73
+    end_month: 99999
+    amount: 400
+    annual_inflation_factor: 0.04
+  medicare_julia:
+    start_month: 49
+    end_month: 99999
+    amount: 400
     annual_inflation_factor: 0.04
   living_pre_retirement:
     start_month: 0
-    end_month: 108
-    amount: 12500
+    end_month: 72
+    amount: 10000
     annual_inflation_factor: 0.04
   living_retirement:
-    start_month: 109
+    start_month: 73
     end_month: 99999
     amount: 12500
     annual_inflation_factor: 0.04
